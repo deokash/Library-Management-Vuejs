@@ -1,0 +1,48 @@
+
+// <button @click="viewBook(book.id)" class="btn btn-icon btn-primary">
+              //   <i class="bi bi-eye-fill"></i></button>
+
+
+requestEbook(ebookId) {
+      const requestCount = this.ebooks.filter(ebook => ebook.requestStatus === 'requested' || ebook.requestStatus === 'granted').length;
+      
+      if (requestCount >= 5) {
+        this.flashMessage = 'Request limit reached';
+        this.clearFlashMessage();
+        return;
+      }
+      
+      fetch(`/user/ebooks/${ebookId}/request`, {
+        method: 'POST',
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            this.fetchEbooks(); // Re-fetch the books to update request statuses
+          }
+        });
+    },
+
+
+
+
+
+
+
+def get_ebooks():
+    ebooks = Ebook.query.all()
+    ebooks_data = []
+    for ebook in ebooks:
+        request_status = 'none'
+        user_request = Request.query.filter_by(user_id=current_user.id, ebook_id=ebook.id).first()
+        if user_request:
+            request_status = 'requested' if not user_request.status == 'granted' else 'granted'
+
+        ebooks_data.append({
+            'id': ebook.id,
+            'name': ebook.name,
+            'author': ebook.author,
+            'section_id': ebook.section_id,
+            'section_name': ebook.section.name,
+            'requestStatus': request_status,
+        })
